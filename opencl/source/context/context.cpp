@@ -58,6 +58,11 @@ Context::~Context() {
     }
 
     if (smallBufferPoolAllocator.isAggregatedSmallBuffersEnabled(this)) {
+        for (auto &bufferPool : smallBufferPoolAllocator.bufferPools) {
+        char txt[255];
+        snprintf ( txt, 255, "~Context main is %x and context is %x !!!!", bufferPool.mainStorage.get(), this);
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt); 
+        }
         smallBufferPoolAllocator.releaseSmallBufferPool();
     }
 
@@ -562,6 +567,11 @@ Context::BufferPool::BufferPool(Context *context) : BaseType(context->memoryMana
                                            nullptr,
                                            bufferCreateArgs,
                                            errcodeRet));
+
+    char txt[255];
+        snprintf ( txt, 255, "BufferPool is %x !!!!", this->mainStorage.get());
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
+
     if (this->mainStorage) {
         this->chunkAllocator.reset(new HeapAllocator(BufferPool::startingOffset,
                                                      BufferPoolAllocator::aggregatedSmallBuffersPoolSize,

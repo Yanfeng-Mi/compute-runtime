@@ -25,6 +25,7 @@
 
 #include <algorithm>
 
+
 namespace NEO {
 
 MemObj::MemObj(Context *context,
@@ -45,6 +46,9 @@ MemObj::MemObj(Context *context,
       multiGraphicsAllocation(std::move(multiGraphicsAllocation)),
       mapAllocations(static_cast<uint32_t>(this->multiGraphicsAllocation.getGraphicsAllocations().size() - 1)) {
     if (context) {
+        char txt[255];
+        snprintf ( txt, 255, "MemObj construct %s !!!!", __PRETTY_FUNCTION__);
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
         context->incRefInternal();
         memoryManager = context->getMemoryManager();
         auto device = context->getDevice(0);
@@ -57,6 +61,15 @@ MemObj::~MemObj() {
         return;
     }
 
+    for (auto &bufferPool : context->getBufferPoolAllocator().bufferPools) {
+        char txt[255];
+        snprintf ( txt, 255, "~MemObj main is %x and context is %x !!!!", bufferPool.mainStorage.get(), context);
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt); 
+        }
+
+    char txt[255];
+        snprintf ( txt, 255, "MemObj deconstruct %s !!!!", __PRETTY_FUNCTION__ );
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
     bool needWait = false;
 
     if (allocatedMapPtr != nullptr) {
@@ -103,6 +116,8 @@ MemObj::~MemObj() {
             }
         }
         if (associatedMemObject) {
+            snprintf ( txt, 255, "hit associatedMemObject !!!!!!!!");
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
             associatedMemObject->decRefInternal();
             context->getBufferPoolAllocator().tryFreeFromPoolBuffer(associatedMemObject, this->offset, this->sizeInPoolAllocator);
         }
@@ -115,6 +130,8 @@ MemObj::~MemObj() {
 
     const bool needDecrementContextRefCount = !context->getBufferPoolAllocator().isPoolBuffer(this);
     if (needDecrementContextRefCount) {
+        snprintf ( txt, 255, "hit needDecrementContextRefCount !!!!!!!!");
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
         context->decRefInternal();
     }
 }

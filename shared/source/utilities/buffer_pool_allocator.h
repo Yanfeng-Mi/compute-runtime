@@ -49,6 +49,7 @@ struct AbstractBuffersPool : public SmallBuffersParams<PoolT>, public NonCopyabl
     AbstractBuffersPool(MemoryManager *memoryManager, OnChunkFreeCallback onChunkFreeCallback);
     AbstractBuffersPool(AbstractBuffersPool<PoolT, BufferType, BufferParentType> &&bufferPool);
     AbstractBuffersPool &operator=(AbstractBuffersPool &&) = delete;
+    virtual ~AbstractBuffersPool();
     void tryFreeFromPoolBuffer(BufferParentType *possiblePoolBuffer, size_t offset, size_t size);
     bool isPoolBuffer(const BufferParentType *buffer) const;
     void drain();
@@ -61,6 +62,7 @@ struct AbstractBuffersPool : public SmallBuffersParams<PoolT>, public NonCopyabl
 
     MemoryManager *memoryManager{nullptr};
     std::unique_ptr<BufferType> mainStorage;
+    BufferType* tempStoragePointerCache{nullptr};
     std::unique_ptr<HeapAllocator> chunkAllocator;
     std::vector<std::pair<uint64_t, size_t>> chunksToFree;
     OnChunkFreeCallback onChunkFreeCallback = nullptr;
@@ -83,7 +85,6 @@ class AbstractBuffersAllocator : public SmallBuffersParams<BuffersPoolType> {
     bool isPoolBuffer(const BufferParentType *buffer) const;
     void tryFreeFromPoolBuffer(BufferParentType *possiblePoolBuffer, size_t offset, size_t size);
 
-  protected:
     inline bool isSizeWithinThreshold(size_t size) const { return smallBufferThreshold >= size; }
     void tryFreeFromPoolBuffer(BufferParentType *possiblePoolBuffer, size_t offset, size_t size, std::vector<BuffersPoolType> &bufferPoolsVec);
     void drain();

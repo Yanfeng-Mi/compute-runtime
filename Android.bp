@@ -36,12 +36,19 @@ cc_defaults {
         "hardware/intel/external/opencl/compute-runtime/device/include/",
     ],
 
+    header_libs: [
+        "libnativebase_headers",
+    ],
+
+
     shared_libs: [
         "libgmm_umd",
+        "liblog",
     ],
 
     static_libs: [
     ],
+
 
 }
 

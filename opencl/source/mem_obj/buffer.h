@@ -232,7 +232,12 @@ class BufferHw : public Buffer {
              bool isHostPtrSVM,
              bool isObjectRedescribed)
         : Buffer(context, memoryProperties, flags, flagsIntel, size, memoryStorage, hostPtr, std::move(multiGraphicsAllocation),
-                 zeroCopy, isHostPtrSVM, isObjectRedescribed) {}
+                 zeroCopy, isHostPtrSVM, isObjectRedescribed) {
+                  char txt[255];
+        snprintf ( txt, 255, "BufferHw %s !!!!", __PRETTY_FUNCTION__ );
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
+
+                 }
 
     void setArgStateful(void *memory, bool forceNonAuxMode, bool disableL3, bool alignSizeForAuxTranslation,
                         bool isReadOnlyArgument, const Device &device, bool useGlobalAtomics, bool areMultipleSubDevicesInContext) override;

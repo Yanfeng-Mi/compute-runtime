@@ -7,9 +7,27 @@
 
 #pragma once
 #include "shared/source/helpers/debug_helpers.h"
-
+#include <android/log.h>
 #include <atomic>
 #include <memory>
+#include <stdio.h>
+#include <execinfo.h>
+#include <string>
+
+
+static void printStack()
+{
+    void *trace[16];
+    size_t size = backtrace(trace, 16);
+    char **sym = (char **)backtrace_symbols(trace, size);
+    for (size_t i = 0; i < size; i++)
+    {
+        char txt[255];
+        snprintf ( txt, 255, "%d--> %s \n", i, sym[i] );
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
+    }
+    return;
+}
 
 namespace NEO {
 
@@ -124,12 +142,26 @@ class ReferenceTrackedObject {
     }
 
     void incRefInternal() {
+        printStack();
+        char txt[255];
+        snprintf ( txt, 255, "incRefInternal %s is %d", __PRETTY_FUNCTION__, refInternal.peek() );
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
         refInternal.inc();
     }
 
     unique_ptr_if_unused<DerivedClass> decRefInternal() {
+        printStack();
+        char txt[255];
+        snprintf ( txt, 255, "decRefInternal %s is %d", __PRETTY_FUNCTION__, refInternal.peek() );
+        //std::string ts = std::string((const char *)txt, 255);
+        //if (ts.find("NEO::Context") != std::string::npos && refInternal.peek() == 1)
+        //{
+        //    UNRECOVERABLE_IF(true);
+        //}
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
         auto customDeleter = tryGetCustomDeleter();
         auto current = refInternal.decAndReturnCurrent();
+
         bool unused = (current == 0);
         UNRECOVERABLE_IF(current < 0);
         return unique_ptr_if_unused<DerivedClass>(static_cast<DerivedClass *>(this), unused, customDeleter);

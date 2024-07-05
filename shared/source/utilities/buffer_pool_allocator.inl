@@ -10,6 +10,7 @@
 #include "shared/source/utilities/heap_allocator.h"
 
 #include <type_traits>
+#include <android/log.h>
 
 namespace NEO {
 
@@ -34,10 +35,21 @@ void AbstractBuffersPool<PoolT, BufferType, BufferParentType>::tryFreeFromPoolBu
 }
 
 template <typename PoolT, typename BufferType, typename BufferParentType>
+AbstractBuffersPool<PoolT, BufferType, BufferParentType>::~AbstractBuffersPool()
+{
+    tempStoragePointerCache = mainStorage.get();
+    char txt[255];
+        snprintf ( txt, 255, "~AbstractBuffersPool main is %x !!!!", this->mainStorage.get());
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
+}
+
+template <typename PoolT, typename BufferType, typename BufferParentType>
 bool AbstractBuffersPool<PoolT, BufferType, BufferParentType>::isPoolBuffer(const BufferParentType *buffer) const {
     static_assert(std::is_base_of_v<BufferParentType, BufferType>);
-
-    return (buffer && this->mainStorage.get() == buffer);
+    char txt[255];
+        snprintf ( txt, 255, "isPoolBuffer 1 buffer is %x, main is %x !!!!", buffer, this->mainStorage.get());
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
+    return (buffer && (this->mainStorage.get() == buffer || this->tempStoragePointerCache == buffer));
 }
 
 template <typename PoolT, typename BufferType, typename BufferParentType>
@@ -60,7 +72,9 @@ void AbstractBuffersPool<PoolT, BufferType, BufferParentType>::drain() {
 template <typename BuffersPoolType, typename BufferType, typename BufferParentType>
 bool AbstractBuffersAllocator<BuffersPoolType, BufferType, BufferParentType>::isPoolBuffer(const BufferParentType *buffer) const {
     static_assert(std::is_base_of_v<BufferParentType, BufferType>);
-
+    char txt[255];
+        snprintf ( txt, 255, "isPoolBuffer 2 %s !!!!", __PRETTY_FUNCTION__ );
+        __android_log_write(ANDROID_LOG_ERROR, "OCL RUNTIME", txt);
     for (auto &bufferPool : this->bufferPools) {
         if (bufferPool.isPoolBuffer(buffer)) {
             return true;
